@@ -1,6 +1,6 @@
 use std::ops::RangeInclusive;
 use clap::Parser;
-use rayon::prelude::*;
+use rayon::{prelude::*, ThreadPoolBuilder};
 
 
 #[derive(Debug, Parser)]
@@ -10,12 +10,16 @@ struct Args {
     #[arg(short, long, default_value_t = 100_000_000)]
     end: u32,
     #[arg(short, long)]
-    threads: Option<u8>
+    threads: Option<usize>
 }
 
 
 fn main() {
     let args: Args = Args::parse();
+
+    if let Some(thread_num) = args.threads {
+        ThreadPoolBuilder::new().num_threads(thread_num).build_global().expect("Set threads sucessfully and only once.");
+    }
 
     let mut start: u32 = 0;
     if let Some(arg) = args.start {
@@ -37,10 +41,7 @@ fn is_prime(number: u32) -> bool {
     let max: u32 = (number as f64).sqrt() as u32;
     while i <= max {
         if number % i == 0 {
-            if number == i {
-                return true;
-            }
-            return false;
+            return number == i;
         }
         i += 1;
     }
