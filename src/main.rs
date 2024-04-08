@@ -10,7 +10,9 @@ struct Args {
     #[arg(short, long, default_value_t = 100_000_000)]
     end: u32,
     #[arg(short, long)]
-    threads: Option<usize>
+    threads: Option<usize>,
+    #[arg(short, long)]
+    memory: bool
 }
 
 
@@ -28,13 +30,19 @@ fn main() {
     
     let end: u32 = args.end;
 
+    if args.memory {
+        if args.threads == Some(1) || args.threads == None {
+            print_sieve_primes(&sieve_of_eratosthenes(end as usize), &start);
+        } else {
+            eprintln!("Multithreading is not implemented for memory mode. Remove --threads or --memory.")
+        }
+    } else {
+        let range: RangeInclusive<u32> = start..=end;
+        range.into_par_iter()
+        .filter(|i: &u32| is_prime(*i))
+        .for_each(|i: u32| println!("{}", i));
+    }
     
-    let range: RangeInclusive<u32> = start..=end;
-    range.into_par_iter()
-    .filter(|i: &u32| is_prime(*i))
-    .for_each(|i: u32| println!("{}", i));
-
-    // print_sieve_primes(&sieve_of_eratosthenes(1000));
 }
 
 
@@ -51,46 +59,29 @@ fn is_prime(number: u32) -> bool {
 }
 
 
-fn sieve_of_eratosthenes(number: usize) -> Vec<bool> {
-    let mut sieve: Vec<bool> = vec![true; number];
-    sieve[0] = false;
-
-    let mut p: usize = 2;
-
-    while p <= number {
-        let mut j = p;
-        if j > number {
-            break;
-        }
-        while j <= number {
-            sieve[j - 1] = false;
-            j += p;
-
-        }
-
-        let old_p = p;
-        let mut num = p+1;
-        while num <= number {
-            if sieve[num - 1] {
-                p = num;
-                break;
-            }
-            num += 1;
-        }
-        if p == old_p {
-            break;
-        }
-    }
-
-    sieve
-}
-
-fn print_sieve_primes(sieve: &Vec<bool>) {
-    let mut i = 1;
+fn print_sieve_primes(sieve: &Vec<bool>, start: &u32) {
+    let mut i = 2;
     for b in sieve {
-        if *b {
+        if *b && i >= *start {
             println!("{i}");
         }
         i += 1
     }
+}
+
+
+fn sieve_of_eratosthenes(n: usize) -> Vec<bool> {
+    let mut sieve = vec![true; n-1];
+    
+    for i in 2..=((n as f32).sqrt() as usize){
+        if sieve[i-2] {
+            let mut j = i * i;
+            while j <= n {
+                sieve[j-2] = false;
+                j += i;
+            }
+        }
+    }
+
+    sieve
 }
