@@ -18,7 +18,7 @@ fn main() {
     let args: Args = Args::parse();
 
     if let Some(thread_num) = args.threads {
-        ThreadPoolBuilder::new().num_threads(thread_num).build_global().expect("Set threads sucessfully and only once.");
+        ThreadPoolBuilder::new().num_threads(thread_num).build_global().expect("Set threads successfully and only once.");
     }
 
     let mut start: u32 = 0;
@@ -33,6 +33,8 @@ fn main() {
     range.into_par_iter()
     .filter(|i: &u32| is_prime(*i))
     .for_each(|i: u32| println!("{}", i));
+
+    // print_sieve_primes(&sieve_of_eratosthenes(1000));
 }
 
 
@@ -46,4 +48,49 @@ fn is_prime(number: u32) -> bool {
         i += 1;
     }
     number >= 2
+}
+
+
+fn sieve_of_eratosthenes(number: usize) -> Vec<bool> {
+    let mut sieve: Vec<bool> = vec![true; number];
+    sieve[0] = false;
+
+    let mut p: usize = 2;
+
+    while p <= number {
+        let mut j = p;
+        if j > number {
+            break;
+        }
+        while j <= number {
+            sieve[j - 1] = false;
+            j += p;
+
+        }
+
+        let old_p = p;
+        let mut num = p+1;
+        while num <= number {
+            if sieve[num - 1] {
+                p = num;
+                break;
+            }
+            num += 1;
+        }
+        if p == old_p {
+            break;
+        }
+    }
+
+    sieve
+}
+
+fn print_sieve_primes(sieve: &Vec<bool>) {
+    let mut i = 1;
+    for b in sieve {
+        if *b {
+            println!("{i}");
+        }
+        i += 1
+    }
 }
