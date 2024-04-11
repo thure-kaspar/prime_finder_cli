@@ -60,9 +60,15 @@ fn is_prime(number: u32) -> bool {
 
 
 fn print_sieve_primes(sieve: &Vec<bool>, start: &u32) {
-    let mut i = 2;
-    for b in sieve {
-        if *b && i >= *start {
+    let actual_start: usize;
+    if start <= &2 {
+        actual_start = 2;
+    } else {
+        actual_start = *start as usize;
+    }
+    let mut i = actual_start;
+    for b in sieve.as_slice()[actual_start-2..].into_iter() {
+        if *b {
             println!("{i}");
         }
         i += 1

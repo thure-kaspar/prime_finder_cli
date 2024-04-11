@@ -3,7 +3,7 @@
 
 The rust toolchain needs to be installed (https://rustup.rs/)
 
-```bash
+```console
 git clone https://github.com/thure-kaspar/prime_finder_cli
 cd prime_finder_cli
 cargo build -r
