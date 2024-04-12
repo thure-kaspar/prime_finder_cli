@@ -22,13 +22,16 @@ fn main() {
     if let Some(thread_num) = args.threads {
         ThreadPoolBuilder::new().num_threads(thread_num).build_global().expect("Set threads successfully and only once.");
     }
+    
+    let end: u32 = args.end;
 
     let mut start: u32 = 0;
     if let Some(arg) = args.start {
         start = arg;
+        if start > end {
+            start = end;
+        }
     }
-    
-    let end: u32 = args.end;
 
     if args.memory {
         if args.threads == Some(1) || args.threads == None {
