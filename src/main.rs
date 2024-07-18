@@ -1,4 +1,5 @@
 use std::ops::RangeInclusive;
+use bit_vec::BitVec;
 use clap::Parser;
 use rayon::{prelude::*, ThreadPoolBuilder};
 
@@ -35,7 +36,7 @@ fn main() {
 
     if args.memory {
         if args.threads == Some(1) || args.threads == None {
-            print_sieve_primes(&sieve_of_eratosthenes(end as usize), &start);
+            print_sieve_primes(sieve_of_eratosthenes(end as usize), &start);
         } else {
             eprintln!("Multithreading is not implemented for memory mode. Remove --threads or --memory.")
         }
@@ -62,7 +63,7 @@ fn is_prime(number: u32) -> bool {
 }
 
 
-fn print_sieve_primes(sieve: &Vec<bool>, start: &u32) {
+fn print_sieve_primes(mut sieve: BitVec, start: &u32) {
     let actual_start: usize;
     if start <= &2 {
         actual_start = 2;
@@ -70,8 +71,9 @@ fn print_sieve_primes(sieve: &Vec<bool>, start: &u32) {
         actual_start = *start as usize;
     }
     let mut i = actual_start;
-    for b in sieve.as_slice()[actual_start-2..].into_iter() {
-        if *b {
+    let sieve = sieve.split_off(actual_start-2);
+    for b in sieve {
+        if b {
             println!("{i}");
         }
         i += 1
@@ -79,14 +81,14 @@ fn print_sieve_primes(sieve: &Vec<bool>, start: &u32) {
 }
 
 
-fn sieve_of_eratosthenes(n: usize) -> Vec<bool> {
-    let mut sieve = vec![true; n-1];
-    
+fn sieve_of_eratosthenes(n: usize) -> BitVec {
+    let mut sieve = BitVec::from_elem(n-1, true);
+
     for i in 2..=((n as f32).sqrt() as usize){
         if sieve[i-2] {
             let mut j = i * i;
             while j <= n {
-                sieve[j-2] = false;
+                sieve.set(j-2, false);
                 j += i;
             }
         }
